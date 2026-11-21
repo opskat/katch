@@ -27,18 +27,26 @@ persistence:
   storageClass: ssd-nfs-client
   size: 50Gi
 
+# 集群入口是 k3s 自带的 Traefik + Gateway API（codfrm/k3s-deployment 的 gateway/），
+# 不再有 ingress-nginx。证书（*.ggnb.top / *.scriptcat.org）在网关上按 SNI 选。
+# 原来 ingress 注解管的几件事在网关上已经满足：Traefik 不缓冲响应、不限请求体，
+# 响应头没有 4k 上限；entryPoint 读超时为 0（不限）、空闲 600s。
 ingress:
+  enabled: false
+
+httpRoute:
   enabled: true
-  className: k3s-main-nginx
-  # annotations 不写在这里：values.yaml 里那几条（关响应缓冲、超时 900s）是必须的，
-  # 用 -f 时 map 会与默认值合并，写了反而容易漏掉其中一条。
-  hosts:
-    - host: katch.ggnb.top
-      paths:
-        - path: /
-          pathType: Prefix
-  # ns app 里已有的通配证书（*.ggnb.top）。
-  tls:
-    - secretName: ggnb-top-tls
-      hosts:
-        - katch.ggnb.top
+  parentRefs:
+    # 同时挂 http：katch.scriptcat.org 经 Cloudflare（Flexible）用 HTTP 回源；
+    # 直接打 http 的请求由网关统一 301 到 https
+    - name: public
+      namespace: gateway
+      sectionName: http
+    - name: public
+      namespace: gateway
+      sectionName: https
+  hostnames:
+    # 经 Cloudflare：上海直连 silicloud 丢包严重，大镜像层拉不完，走 CF 后多数时候快几十倍
+    - katch.scriptcat.org
+    # 直连，保留给已经配好它的客户端
+    - katch.ggnb.top

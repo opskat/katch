@@ -24,6 +24,10 @@ katch {{ .Chart.AppVersion }} 已装到 {{ .Release.Namespace }}/{{ include "kat
      http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
 {{- end }}
 {{- end }}
+{{- else if .Values.httpRoute.enabled }}
+{{- range .Values.httpRoute.hostnames }}
+     https://{{ . }}/
+{{- end }}
 {{- else }}
      kubectl -n {{ .Release.Namespace }} port-forward svc/{{ include "katch.fullname" . }} 8080:{{ .Values.service.port }}
      # 然后开 http://127.0.0.1:8080 ，后台在 /admin

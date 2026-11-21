@@ -193,6 +193,11 @@ nginx.ingress.kubernetes.io/proxy-buffer-size: "16k"
 独立 nginx 的对应写法是 `proxy_buffering off;`、`proxy_read_timeout 900s;`、
 `client_max_body_size 0;`、`proxy_buffer_size 16k;`。
 
+用 Gateway API（chart 的 `httpRoute`）时这几件事在 Gateway 实现那一侧配。以 Traefik v3 为例：
+它本来就不缓冲响应、不限请求体、响应头也没有 4k 的坑，只需要把 entryPoint 的
+`transport.respondingTimeouts.readTimeout` 调成 `0s`（v3 默认 60s，而且算的是整个请求
+含 body，大层推送会在中途被切断）。
+
 还有一条：**反代必须把整个 `/` 都转给 katch**，不能按前缀挑。路径的第一段就是上游
 主机名，挑路径等于把上游挑着代理，而且每加一个上游都要回来改一次反代配置。
 
@@ -235,8 +240,8 @@ k3s-master-1 那台集群的 ns `app`，release 名 `katch`。GitHub 上那套
 
 集群相关的值入库在
 [`deploy/helm/katch/values-ggnb.yaml`](../deploy/helm/katch/values-ggnb.yaml)：域名
-`katch.ggnb.top`、`ssd-nfs-client`、ingress class `k3s-main-nginx`、通配证书
-`ggnb-top-tls`。拉镜像的 `dockersecret` 也是 ns app 里本来就有的那份。
+`katch.scriptcat.org`（经 Cloudflare）与 `katch.ggnb.top`（直连）、`ssd-nfs-client`、
+挂到集群入口 Gateway `gateway/public` 的 HTTPRoute（证书在网关上）。拉镜像的 `dockersecret` 也是 ns app 里本来就有的那份。
 
 升级跑在 runner 上，不登机器，也不带 `--wait`（集群里那个 deploy SA 没有读
 replicasets 的权限，而 helm 判断 rollout 完成要读它）：升起来没有要看 Pod。

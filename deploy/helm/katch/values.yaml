@@ -121,6 +121,19 @@ ingress:
         - path: /
           pathType: Prefix
   tls: []
+
+# Gateway API（HTTPRoute）入口，和上面的 ingress 二选一。
+# 关缓冲 / 超时 / 头大小这几件事在 Gateway 实现那一侧配，不在路由上——
+# 见 docs/deploy.md「放在反代后面」。
+httpRoute:
+  enabled: false
+  # 挂到哪个 Gateway；sectionNames 为空则挂到它的全部监听器
+  parentRefs: []
+  #  - name: public
+  #    namespace: gateway
+  #    sectionName: https
+  hostnames: []
+  #  - katch.example.com
   #  - secretName: katch-tls
   #    hosts:
   #      - katch.example.com
