@@ -45,8 +45,13 @@ httpRoute:
     - name: public
       namespace: gateway
       sectionName: https
+  # katch.scriptcat.org 是对外推荐的地址，挂在 Cloudflare 后面。上海的机器直连
+  # silicloud 丢包 10%–40%，大多只有十几 KB/s，51 MB 的镜像层拉不完；走 Cloudflare
+  # 多数时候在 0.6–2.4 MB/s（2026-11-20 实测），仍有波动。katch.ggnb.top 直连源站，
+  # 留给已经配好它的客户端。
+  # 证书（*.scriptcat.org、*.ggnb.top）在网关上按 SNI 选。Cloudflare 的 SSL 模式用 Full
+  # （回源 443）或 Flexible（回源 80）都行：网关按 X-Forwarded-Proto 判断，CF 转来的
+  # https 请求在 80 上也不会被跳回 https，不会形成重定向循环。
   hostnames:
-    # 经 Cloudflare：上海直连 silicloud 丢包严重，大镜像层拉不完，走 CF 后多数时候快几十倍
     - katch.scriptcat.org
-    # 直连，保留给已经配好它的客户端
     - katch.ggnb.top

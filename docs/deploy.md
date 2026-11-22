@@ -240,7 +240,7 @@ k3s-master-1 那台集群的 ns `app`，release 名 `katch`。GitHub 上那套
 
 集群相关的值入库在
 [`deploy/helm/katch/values-ggnb.yaml`](../deploy/helm/katch/values-ggnb.yaml)：域名
-`katch.scriptcat.org`（经 Cloudflare）与 `katch.ggnb.top`（直连）、`ssd-nfs-client`、
+`katch.scriptcat.org`（经 Cloudflare，对外推荐）与 `katch.ggnb.top`（直连源站）、`ssd-nfs-client`、
 挂到集群入口 Gateway `gateway/public` 的 HTTPRoute（证书在网关上）。拉镜像的 `dockersecret` 也是 ns app 里本来就有的那份。
 
 升级跑在 runner 上，不登机器，也不带 `--wait`（集群里那个 deploy SA 没有读
